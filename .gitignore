@@ -1,0 +1,6 @@
+/shaders/lib/atmosphere/functions.glsl
+/shaders/lib/atmosphere/definitions.glsl
+/shaders/lib/atmosphere/generate_LUT.glsl
+notes.md
+/template/*
+/shaders/image_backup/*
