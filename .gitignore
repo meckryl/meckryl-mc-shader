@@ -4,3 +4,6 @@
 notes.md
 /template/*
 /shaders/image_backup/*
+/shaders/image/captured_LUTs.rdc
+/shaders/image/captured_2xLUTs.rdc
+/shaders/image/captured_scattering.rdc
