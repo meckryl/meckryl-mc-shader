@@ -8,27 +8,40 @@ const bool shadowcolor0Nearest = true;
 
 const float scaleFactor = RTW_IMAP_RES/shadowMapResolution;
 
-float lerpSum(float val, int row, sampler2D imap) {
+layout (r32ui) uniform restrict uimage2D rtw_imap;
+
+float lerpSum(float val, int col) {
     int floorVal = int(floor(val));
-    return mix(texelFetch(imap, ivec2(row, floorVal), 0).x, texelFetch(imap, ivec2(row, floorVal + 1), 0).x, fract(val));
+    return mix(imageLoad(rtw_imap, ivec2(col, floorVal)).x, imageLoad(rtw_imap, ivec2(col, floorVal + 1)).x, fract(val));
 }
 
-vec2 mapPos(vec3 fromPos, sampler2D imap) {
+float getImportance(vec3 localPos) {
+    vec3 pos = localPosToSViewPos(localPos);
+    pos = sViewPosToSNDCPos(pos);
+    vec2 texelPos = (pos.xy * 0.5 + 0.5) * RTW_IMAP_RES;
+    float sliceX = lerpSum(min(texelPos.x, RTW_IMAP_RES - 1.0), 3);
+    float totalX = imageLoad(rtw_imap, ivec2(1, RTW_IMAP_RES - 1.0)).x;
+    float sliceY = lerpSum(min(texelPos.y, RTW_IMAP_RES - 1.0), 2);
+    float totalY = imageLoad(rtw_imap, ivec2(0, RTW_IMAP_RES - 1.0)).x;
+    return max((sliceX/totalX) * (sliceY/totalY) * RTW_IMAP_RES * RTW_IMAP_RES, 0.001);
+}
+
+vec2 mapPos(vec3 fromPos) {
     vec2 resultPos = ivec2(0.0);
 
     vec2 ndcPos = fromPos.xy;
 
     vec2 texelPos = (ndcPos.xy * 0.5 + 0.5) * RTW_IMAP_RES;
 
-    float partialSumX = lerpSum(min(texelPos.x, RTW_IMAP_RES - 1.0), 1, imap);
+    float partialSumX = lerpSum(min(texelPos.x, RTW_IMAP_RES - 1.0), 1);
     //float partialSumX = texelPos.x;
-    float fullSumX = texelFetch(imap, ivec2(1, RTW_IMAP_RES - 1.0), 0).x;
+    float fullSumX = imageLoad(rtw_imap, ivec2(1, RTW_IMAP_RES - 1.0)).x;
     //float fullSumX = 511;
     resultPos.x = partialSumX / fullSumX - (texelPos.x + 1) / float(RTW_IMAP_RES);
 
-    float partialSumY = lerpSum(min(texelPos.y, RTW_IMAP_RES - 1.0), 0, imap);
+    float partialSumY = lerpSum(min(texelPos.y, RTW_IMAP_RES - 1.0), 0);
     //float partialSumY = texelPos.y;
-    float fullSumY = texelFetch(imap, ivec2(0, RTW_IMAP_RES - 1.0), 0).x;
+    float fullSumY = imageLoad(rtw_imap, ivec2(0, RTW_IMAP_RES - 1.0)).x;
     //float fullSumY = 511;
     resultPos.y = partialSumY / fullSumY - (texelPos.y + 1) / float(RTW_IMAP_RES);
 

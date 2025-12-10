@@ -10,11 +10,6 @@
 #endif
 #include "/lib/materials/materials.glsl"
 
-
-#ifdef RTW_ENABLED
-uniform sampler2D rtw_imap_smpl;
-#endif
-
 out vec2 texcoord;
 out vec4 glcolor;
 
@@ -26,8 +21,8 @@ void main() {
     handleMaterialProperties();
 
 #ifdef RTW_ENABLED
-    gl_Position.xy = mapPos(gl_Position.xyz, rtw_imap_smpl);
-    gl_Position.z *= 0.5;
+    gl_Position.xy = mapPos(gl_Position.xyz);
+    gl_Position.z *= 0.8;
 #else
     gl_Position.xyz = distortShadowClipPos(gl_Position.xyz);
 #endif
