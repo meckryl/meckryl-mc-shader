@@ -1,4 +1,4 @@
-#include "/program/blockFacePBR.fsh"
+#include "/program/blockFacePBR.glsl"
 #include "/lib/atmosphere/atmosphere.glsl"
 
 /* RENDERTARGETS: 0 */

@@ -19,9 +19,11 @@ vec3 projectAndDivide(mat4 projectionMatrix, vec3 position) {
 	return homogenousPosition.xyz / homogenousPosition.w;
 }
 
+#ifndef COMPUTE
 vec3 modelPosToViewPos(vec3 modelPos) {
     return (gl_ModelViewMatrix * vec4(modelPos, 1.0)).xyz;
 }
+#endif
 
 vec3 clipPosToViewPos(vec4 clipPos) {
     return (gbufferProjectionInverse * clipPos).xyz;

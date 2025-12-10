@@ -37,10 +37,4 @@ void main() {
     
     labpbrSpeculars = texture(specular, texcoord);
     labpbrNormals = texture(normals, texcoord);
-
-#ifndef MC_TEXTURE_FORMAT_LAB_PBR
-    if (blockID == uint(2)) {
-        labpbrSpeculars.z = 1.0;
-    }
-#endif
 }

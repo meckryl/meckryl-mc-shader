@@ -1,6 +1,6 @@
 #version 460 compatibility
 
-#include "/program/blockFacePBR.fsh"
+#include "/program/blockFacePBR.glsl"
 #include "/lib/lighting/screenReflections.glsl"
 #include "/lib/atmosphere/atmosphere.glsl"
 
@@ -22,12 +22,13 @@ void main() {
     float reflectionFactor = getReflectionFactor(texcoord, texture(colortex6, texcoord).x, texture(colortex6, texcoord).y);
     vec4 reflectedColor = reflectionFactor >= 0.3 ? getReflectedColor(screenPos, surfaceNorm, colortex0, depthtex0, hitPos, hitSky) : vec4(-1.0);
     if (hitSky) {
-        reflectedColor = vec4(vec3(1.0) - exp(-1.0 * getSkyColor(texcoord.xy) * 7), reflectedColor.a);
+        //reflectedColor = vec4(vec3(1.0) - exp(-1.0 * getSkyColor(texcoord.xy) * 7), reflectedColor.a);
+        reflectedColor = vec4(getSkyColor(texcoord.xy), reflectedColor.a);
     }
-    else if (reflectedColor.r < 0) {
+    if (reflectedColor.r < 0) {
         return;
     }
 
-    float alpha = reflectedColor.a * clamp01(reflectionFactor);
+    float alpha = reflectedColor.a * reflectionFactor;
     color.rgb += reflectedColor.rgb * alpha;
 }

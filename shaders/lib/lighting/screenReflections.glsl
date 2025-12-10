@@ -55,14 +55,14 @@ vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler
     float sampleDepth;
     float terrainDepth;
     float deltaDepth;
+
     for (int i = 0; i < int(delta); ++i) {
         currentFrag += increment;
-        if (!fragOnScreen(currentFrag)) currentFrag -= increment * 0.5;
         if (!fragOnScreen(currentFrag)){
             screenEdge = true;
             break;
         }
-        s = useX ? (currentFrag.x - startFrag.x) / deltas.x : (currentFrag.y - startFrag.y)/deltas.y;
+        s = useX ? (currentFrag.x - startFrag.x) / deltas.x : (currentFrag.y - startFrag.y) / deltas.y;
 
         sampleDepth = (localDist * endDist) / mix(endDist, localDist, s);
         terrainDepth = texelFetch(depthSampler, ivec2(currentFrag), 0).x;

@@ -18,7 +18,34 @@ vec3 getLocalNormal(vec2 screenCoord) {
 #else
     vec3 tangentSpaceNormal = vec3(0.0, 0.0, 1.0);
 #endif
-    return TBN * tangentSpaceNormal;
+    return normalize(TBN * tangentSpaceNormal);
+}
+
+float getNormalDistribution(vec3 normal, vec3 halfDir, float roughness) {
+    float NoH = satDot(normal, halfDir);
+    if (NoH <= 0) return 0.0;
+    float numerator = step(0, NoH) * pow2(roughness);
+    float denom = PI * pow2(pow2(NoH) * (pow2(roughness) - 1) + 1);
+
+    return numerator / denom;
+}
+
+float getGeometricShadowing(vec3 x, vec3 normal, vec3 halfDir, float roughness) {
+    float ratio = satDot(x, halfDir) / satDot(x, normal);
+    float numerator = step(0, ratio) * 2;
+    float tanTheta = (1 - pow2(satDot(x, normal))) / pow2(satDot(x, normal));
+    float denom = 1.0 + sqrt(1.0 + pow2(roughness) * tanTheta);
+
+    return numerator / denom;
+}
+
+float getGeometricShadowingReflected(vec3 x, vec3 normal, vec3 halfDir, float roughness) {
+    float ratio = 1.0;
+    float numerator = 2.0;
+    float tanTheta = (1 - pow2(satDot(x, normal))) / pow2(satDot(x, normal));
+    float denom = 1.0 + sqrt(1.0 + pow2(roughness) * tanTheta);
+
+    return numerator / denom;
 }
 
 float getReflectionFactor(vec2 screenCoord, float smoothness, float reflectance) {
@@ -31,24 +58,30 @@ float getReflectionFactor(vec2 screenCoord, float smoothness, float reflectance)
     vec3 viewDirection = -normalize(localPos);
     vec3 surfaceNorm = getLocalNormal(screenCoord);
     vec3 halfDirection = surfaceNorm;
+    vec3 reflectionDirection = normalize(reflect(-viewDirection, surfaceNorm));
 
-    float NoH = dot(surfaceNorm, halfDirection);
     float NoV = dot(surfaceNorm, viewDirection);
-    float HoV = clamp01(dot(halfDirection, viewDirection));
-    float NoL = clamp01(NoV);
+    float HoV = dot(halfDirection, viewDirection);
+    float NoL = clamp01(dot(halfDirection, reflectionDirection));
 
-    float normalDistribution = pow2(roughness);
-    normalDistribution /= PI * pow2(pow2(NoH) * (pow2(roughness) - 1) + 1);
+    //float normalDistribution = pow2(roughness);
+    //normalDistribution /= PI * pow2(pow2(NoH) * (pow2(roughness) - 1) + 1);
 
-    float k = pow2(roughness + 1) * 0.125;
-    float geometryFunction = (NoV / (NoV * (1 - k) + k)) * (NoL / (NoL * (1 - k) + k));
+    float normalDistribution = getNormalDistribution(surfaceNorm, halfDirection, roughness);
+
+    //float k = pow2(roughness + 1) * 0.125;
+    //float k = pow2(roughness) * 0.5;
+    //float geometryFunction = (NoV / (NoV * (1 - k) + k)) * (NoL / (NoL * (1 - k) + k));
+
+    float geometryFunction = getGeometricShadowingReflected(viewDirection, surfaceNorm, halfDirection, roughness);
+    geometryFunction *= getGeometricShadowingReflected(reflectionDirection, surfaceNorm, halfDirection, roughness);
 
     float fresnel = reflectance + (1 - reflectance) * pow(1 - (HoV), 5); //Approximation, should replace to support metalic values
 
     float reflectionFactor = normalDistribution * fresnel * geometryFunction;
     reflectionFactor /= 4 * NoV * NoL;
 
-    return max(reflectionFactor, 0);
+    return clamp01(reflectionFactor);
 }
 
 vec3 getSurfaceRadiance(vec2 screenCoord, vec3 albedo) {
@@ -66,21 +99,18 @@ vec3 getSurfaceRadiance(vec2 screenCoord, vec3 albedo) {
 
     float NoH = dot(surfaceNorm, halfDirection);
     float NoV = dot(surfaceNorm, viewDirection);
-    float HoV = dot(halfDirection, viewDirection);
+    float HoV = clamp01(dot(halfDirection, viewDirection));
     float NoL = clamp01(dot(surfaceNorm, getMainLightDirection()));
 
-    float normalDistribution = pow2(roughness);
-    normalDistribution /= PI * pow2(pow2(NoH) * (pow2(roughness) - 1) + 1);
+    float normalDistribution = getNormalDistribution(surfaceNorm, halfDirection, roughness);
 
-    float k = pow2(roughness + 1) * 0.125;
-    float geometryFunction = (NoV / (NoV * (1 - k) + k)) * (NoL / (NoL * (1 - k) + k));
+    float geometryFunction = getGeometricShadowing(viewDirection, surfaceNorm, halfDirection, roughness);
+    geometryFunction *= getGeometricShadowing(getMainLightDirection(), surfaceNorm, halfDirection, roughness);
 
     float fresnel = reflectance + (1 - reflectance) * pow(1 - (HoV), 5); //Approximation, should replace to support metalic values
     
     float diffuseFactor = (1 - fresnel);
 
-
-    vec3 blockNormal = normalize(texture(colortex2, screenCoord).xyz * 2.0 - 1.0);
     vec4 shadowClipPos = screenPosToShadowClipPos(screenPos, surfaceNorm);
 	vec3 directLight = getSoftShadow(shadowClipPos, screenCoord, length(localPos.xz));
 
