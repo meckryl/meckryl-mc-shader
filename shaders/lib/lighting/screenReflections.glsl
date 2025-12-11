@@ -9,7 +9,7 @@ float interpolateZ(float zStart, float zEnd, float s) {
     return 1.0/inverse;
 }
 
-vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler, sampler2D depthSampler, out vec2 hitPos, out bool hitSky) {
+vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler, sampler2D depthSampler, sampler2D normalSampler, out vec2 hitPos, out bool hitSky) {
     vec3 viewPos = ndcPosToViewPos(screenPos * 2.0 - 1.0);
     float localDist = -viewPos.z;
 
@@ -20,10 +20,11 @@ vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler
     bool screenEdge = false;
     hitSky = false;
 
-    const float maximumDepth = 40;
+    const float maximumDepth = 100;
     const float resolution = 0.2;
-    const int potentialSteps = 15;
-    const float bias = 0.1;
+    const int scanSteps = 10;
+    const int refinementSteps = 15;
+    const float bias = 0.3;
 
     if (localDist >= (16*12)) return vec4(-1);
 
@@ -45,6 +46,7 @@ vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler
     float delta = ((useX) ? abs(deltas.x) : abs(deltas.y)) * resolution;
     vec2 increment = deltas / max(delta, 0.1);
 
+    if (length(increment) < 1.0) increment *= 2.0;
     if (length(increment) < 1.0) return vec4(-1);
 
     vec2 lastHit = vec2(-1, -1);
@@ -56,8 +58,13 @@ vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler
     float terrainDepth;
     float deltaDepth;
 
-    for (int i = 0; i < int(delta); ++i) {
+    for (int i = 1; i <= int(delta); ++i) {
         currentFrag += increment;
+
+        //s = pow2(i / float(scanSteps));
+        //s = i / float(scanSteps);
+
+        
         if (!fragOnScreen(currentFrag)){
             screenEdge = true;
             break;
@@ -67,10 +74,11 @@ vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler
         sampleDepth = (localDist * endDist) / mix(endDist, localDist, s);
         terrainDepth = texelFetch(depthSampler, ivec2(currentFrag), 0).x;
         terrainDepth = -(ndcPosToViewPos(vec3(currentFrag/screenSize, terrainDepth) * 2.0 - 1.0).z);
+        vec3 terrainNorm = texelFetch(normalSampler, ivec2(currentFrag), 0).xyz * 2.0 - 1.0;
 
         deltaDepth = sampleDepth - terrainDepth;
 
-        if (deltaDepth > 0 && deltaDepth < bias * max((sampleDepth - localDist), 10.0)) {
+        if (deltaDepth > 0 && deltaDepth < bias * max((sampleDepth - localDist), 3.0) * (1.0 - clamp01(dot(surfaceNorm, terrainNorm)))) {
             hit0 = true;
             break;
         }
@@ -90,19 +98,19 @@ vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler
     
         s = (s + lastMiss) / 2.0;
 
-        int steps = potentialSteps;
 
-        for (int i = 0; i < steps; ++i) {
+        for (int i = 0; i < refinementSteps; ++i) {
             currentFrag = mix(startFrag.xy, endFrag.xy, s);
 
             //sampleDepth = interpolateZ(localDist, endDist, s);
             sampleDepth = (localDist * endDist) / mix(endDist, localDist, s);
             terrainDepth = texelFetch(depthSampler, ivec2(currentFrag), 0).x;
             terrainDepth = -ndcPosToViewPos(vec3(currentFrag/screenSize, terrainDepth) * 2.0 - 1.0).z;
+            vec3 terrainNorm = texelFetch(normalSampler, ivec2(currentFrag), 0).xyz * 2.0 - 1.0;
 
             deltaDepth = sampleDepth - terrainDepth;
 
-            if (deltaDepth > 0 && deltaDepth < bias * max((sampleDepth - localDist), 1.0)) {
+            if (deltaDepth > 0 && deltaDepth < bias * max((sampleDepth - localDist), 1.0) * (1.0 - clamp01(dot(surfaceNorm, terrainNorm)))) {
                 hit1 = true;
                 lastHit = currentFrag;
                 s = (s + lastMiss) / 2.0;

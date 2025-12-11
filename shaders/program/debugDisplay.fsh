@@ -21,9 +21,9 @@ void main() {
     if (is_sneaking) {
         ivec2 texelPos = ivec2(texcoord * RTW_IMAP_RES);
         //texelPos.x += 2;
-        //color = imageLoad(rtw_imap, texelPos);
+        color = imageLoad(rtw_imap, texelPos);
         //color.rgb = texture(rtw_imap_smpl, texcoord).rgb * 255.0;
-        color = texture(shadowtex0, texcoord) * 2.0 - 1.0;
+        //color = texture(shadowtex0, texcoord) * 2.0 - 1.0;
     }
     else {
         color = texture(colortex0, texcoord);

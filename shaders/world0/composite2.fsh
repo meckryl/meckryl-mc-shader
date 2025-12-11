@@ -20,7 +20,7 @@ void main() {
     vec2 hitPos;
     bool hitSky = false;
     float reflectionFactor = getReflectionFactor(texcoord, texture(colortex6, texcoord).x, texture(colortex6, texcoord).y);
-    vec4 reflectedColor = reflectionFactor >= 0.3 ? getReflectedColor(screenPos, surfaceNorm, colortex0, depthtex0, hitPos, hitSky) : vec4(-1.0);
+    vec4 reflectedColor = reflectionFactor >= 0.3 ? getReflectedColor(screenPos, surfaceNorm, colortex0, depthtex0, colortex2, hitPos, hitSky) : vec4(-1.0);
     if (hitSky) {
         //reflectedColor = vec4(vec3(1.0) - exp(-1.0 * getSkyColor(texcoord.xy) * 7), reflectedColor.a);
         reflectedColor = vec4(getSkyColor(texcoord.xy), reflectedColor.a);

@@ -25,7 +25,7 @@ void main() {
 
     vec2 invoMapping = vec2(float(localID + 256.0 * gl_WorkGroupID.y) / 2560.0 , float(workGroupID) / 1440.0);
 
-    float depth = texelFetch(depthtex0, ivec2(invoMapping * screenSize), 0).x;
+    float depth = texelFetch(depthtex1, ivec2(invoMapping * screenSize), 0).x;
     if (depth >= 1.0) return;
     
     vec3 pos = vec3(invoMapping, depth);

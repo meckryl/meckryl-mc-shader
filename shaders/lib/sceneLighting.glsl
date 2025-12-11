@@ -47,7 +47,7 @@ vec4 screenPosToShadowClipPos(vec3 screenPos, vec3 normal) {
 
 #ifdef RTW_ENABLED
     //bias *= vec3(max((1.0 - biasWeight) * (1.0/getImportance(feetPlayerPos)) + (1.0/getImportance(feetPlayerPos)), 0.15));
-    bias *= vec3(max((1.0 - biasWeight) * min(length(feetPlayerPos.xz), 50) * 0.02, 0.15));
+    bias *= vec3(max((1.0 - biasWeight) * min(length(feetPlayerPos.xz), 50) * 0.01, 0.10));
 
 #else
     bias *= vec3(max((2.0 - biasWeight) * length(feetPlayerPos.xz) * 0.01, 0.15));

@@ -20,13 +20,12 @@ vec2 screenToTex(vec3 screenPos) {
     return (pos.xy * 0.5 + 0.5) * RTW_IMAP_RES; 
 }
 
-vec2 getPointBehind() {
-    vec3 pos = vec3(0.5, 0.5, 1.0);
-    pos = ndcPosToViewPos(pos * 2.0 - 1.0);
-    pos = viewPosToLocalPos(pos);
+vec2 getPointBehind(out float yFactor) {
+    vec3 pos = gbufferModelViewInverse[2].xyz;
+    yFactor = abs(pos.y);
     pos.y = 0;
     pos = normalize(pos);
-    pos = localPosToSViewPos(-5.0 * pos);
+    pos = localPosToSViewPos((5.0 + yFactor * 10.0) * pos);
     pos = sViewPosToSNDCPos(pos);
     
     return (pos.xy * 0.5 + 0.5) * RTW_IMAP_RES; 
@@ -38,18 +37,13 @@ void main() {
 
     ivec2 invoMapping = ivec2(localID, workGroupID);
 
-    bool inViewWedge = testInWedge(invoMapping, getPointBehind(), screenToTex(vec3(1.1, 0.5, 1.0)), screenToTex(vec3(-0.1, 0.5, 1.0)));
+    float yFactor;
+    bool inViewWedge = testInWedge(invoMapping, getPointBehind(yFactor), screenToTex(vec3(1.1, 0.5, 1.0)), screenToTex(vec3(-0.1, 0.5, 1.0)));
 
     int value = 0;
     
-    if (inViewWedge) {
+    if (inViewWedge || yFactor >= 0.95) {
         value = max(int(min(300.0 - 5.0 * length(invoMapping - RTW_IMAP_RES / 2.0), 300.0)), 1);
-    }
-    else if (length(vec2(invoMapping)/float(RTW_IMAP_RES) - 0.5) < 0.01) {
-        //value = 100;
-    }
-    else if (length(vec2(invoMapping)/float(RTW_IMAP_RES) - 0.5) < 0.04) {
-        //value = 45;
     }
 
     imageStore(rtw_imap, invoMapping, uvec4(value, 0, 0, 1));
