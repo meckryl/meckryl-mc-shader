@@ -15,7 +15,10 @@ layout(location = 0) out vec4 color;
 void main() {
 	vec4 sampledColor = vec4(texture(colortex0, texcoord));
 
+    sampledColor.rgb = vec3(1.0) - exp(-1.0 * sampledColor.rgb * 1.5);
+
 	sampledColor.rgb = ACESFitted(sampledColor.rgb);
+    //sampledColor.rgb = ACESApproximate(sampledColor.rgb);
     
     sampledColor.rgb = pow(sampledColor.rgb, vec3(1.0 / 2.2)); // Gamma correction
 

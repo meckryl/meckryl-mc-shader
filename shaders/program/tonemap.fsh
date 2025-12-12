@@ -1,6 +1,6 @@
 //Approximation of ACES by Krzysztof Narkowicz: https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
 
-vec3 acesApproximate(vec3 color) {
+vec3 ACESApproximate(vec3 color) {
     color *= 0.6;
     float a = 2.51;
     float b = 0.03;

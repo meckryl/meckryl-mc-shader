@@ -26,7 +26,7 @@ vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler
     const int refinementSteps = 15;
     const float bias = 0.3;
 
-    if (localDist >= (16*12)) return vec4(-1);
+    if (localDist >= (500.0)) return vec4(-1);
 
     vec3 vsurfaceNorm = localPosToViewPos(surfaceNorm);
 

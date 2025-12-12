@@ -30,7 +30,7 @@ void main() {
 	vec3 NDCPos = vec3(texcoord.xy, depth) * 2.0 - 1.0;
 	vec3 viewPos = projectAndDivide(gbufferProjectionInverse, NDCPos);
     vec3 localPos = viewPosToLocalPos(viewPos);
-    localPos /= 1;
+    localPos /= 2;
     localPos.y = 0;
 
 	float dist = max(0.0, (length(viewPos) - FOG_START)) / (far*0.65 - FOG_START);
@@ -43,6 +43,6 @@ void main() {
 
 	float fogFactor = exp(-FOG_DENSITY * (1.0 - dist));
 
-	color.rgb = mix(color.rgb, color.rgb + inScatter, clamp(fogFactor-0.006738, 0.0, 1.0));
+	color.rgb = mix(color.rgb, color.rgb + inScatter, clamp(fogFactor-0.0065, 0.0, 1.0)); //I have literally no idea where this number 0.0065 came from I coded this a few weeks ago
 
 }
