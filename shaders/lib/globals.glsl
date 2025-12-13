@@ -32,6 +32,7 @@ const float blockWaveFreq = 1.0;
 const float blockWaveSpeed = 1.0;
 
 const int shadowMapResolution = 2048;
+const bool shadowHardwareFiltering = false;
 
 #ifdef VANILLA_AO
     const float ambientOcclusionLevel = 0.7;

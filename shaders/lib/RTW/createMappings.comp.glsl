@@ -56,7 +56,6 @@ void main() {
         else {
             ival = 0;
         }
-        barrier();
         groupResult = subgroupAdd(ival);
         if (subgroupInvoID == 0) {
             groupData[subgroupID] = groupResult;
@@ -64,7 +63,7 @@ void main() {
 
         
         neededSubgroups /= gl_SubgroupSize;
-        
+        barrier();
     }
 
     barrier();

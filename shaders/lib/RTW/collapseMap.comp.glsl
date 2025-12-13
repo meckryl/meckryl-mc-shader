@@ -17,7 +17,7 @@ void main() {
     uint isColumn = gl_WorkGroupID.y;
 
     ivec2 invoMapping;
-    
+
     invoMapping.x = (isColumn == 0) ? int(localID) + 4 : int(workGroupID) + 4;
     invoMapping.y = (isColumn == 0) ? int(workGroupID) : int(localID);
 
@@ -32,7 +32,7 @@ void main() {
     {
         float ival = 0.0;
         if (invoMapping.x < RTW_IMAP_RES) {
-            ival = min(imageLoad(rtw_imap, invoMapping).x, int(500 * (1.0 - length((vec2(invoMapping.xy) / 1024.0)*2.0 - 1.0) * 2.0)));
+            ival = min(imageLoad(rtw_imap, invoMapping).x, int((500 * (1.0 - length((vec2(invoMapping.xy) / 1024.0)*2.0 - 1.0) * 2.0) * ACCURACY_MULT)));
         }
         groupData[localID] = 0.0;
 
@@ -56,7 +56,7 @@ void main() {
         else {
             ival = 0;
         }
-        barrier();
+        
         groupResult = subgroupAdd(ival);
         if (subgroupInvoID == 0) {
             groupData[subgroupID] = groupResult;
@@ -64,6 +64,7 @@ void main() {
 
         
         neededSubgroups /= gl_SubgroupSize;
+        barrier();
     }
 
     barrier();

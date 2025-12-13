@@ -11,6 +11,8 @@ layout (r32ui) uniform uimage2D rtw_imap;
 
 uniform sampler2D depthtex1;
 
+uniform int frameCounter;
+
 void main() {
     uint workGroupID = gl_WorkGroupID.x;
     uint localID = gl_LocalInvocationID.x;

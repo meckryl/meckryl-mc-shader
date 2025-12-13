@@ -1,7 +1,5 @@
 #version 460 compatibility
 
-#extension GL_ARB_shader_image_load_store : enable
-
 #define BACKWARDS_RESOLUTION ivec2(2560, 1440)
 #define COMPUTE
 
@@ -18,6 +16,7 @@ layout (r32ui) uniform uimage2D rtw_imap;
 
 uniform float far;
 uniform vec3 shadowLightPosition;
+uniform int frameCounter;
 
 void main() {
     uint workGroupID = gl_WorkGroupID.x;
@@ -35,9 +34,10 @@ void main() {
     pos = localPosToSViewPos(pos);
     pos = sViewPosToSNDCPos(pos);
 
-    int val = 1;
+    int val = 1;// * (1 - int(depth));
 
     ivec2 texelPos = ivec2((pos.xy * 0.5 + 0.5) * RTW_IMAP_RES);
 
-    imageAtomicAdd(rtw_imap, texelPos, val);
+    imageAtomicAdd(rtw_imap, texelPos, val * ACCURACY_MULT);
+    //imageStore(rtw_imap, texelPos, uvec4(1));
 }

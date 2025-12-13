@@ -2,9 +2,7 @@
 
 const bool shadowtex0Nearest = true;
 const bool shadowtex1Nearest = true;
-const bool shadowcolor0Nearest = true;
-
-const float scaleFactor = RTW_IMAP_RES/shadowMapResolution;
+const bool shadowcolor0Nearest = false;
 
 layout (r32ui) uniform restrict uimage2D rtw_imap;
 

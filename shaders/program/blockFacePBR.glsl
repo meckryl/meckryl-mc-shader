@@ -111,8 +111,7 @@ vec3 getSurfaceRadiance(vec2 screenCoord, vec3 albedo) {
     
     float diffuseFactor = (1 - fresnel);
 
-    vec4 shadowClipPos = screenPosToShadowClipPos(screenPos, surfaceNorm);
-	vec3 directLight = getSoftShadow(shadowClipPos, screenCoord, length(localPos.xz));
+	vec3 directLight = getSoftShadow(screenCoord, surfaceNorm);
 
     vec4 sceneLighting = getLightVector(screenPos);
     vec3 mainlight = sceneLighting.x * getMainColor() * directLight * NoL;

@@ -11,6 +11,8 @@ const ivec3 workGroups = ivec3(RTW_IMAP_RES, 1, 1);
 
 layout (r32ui) uniform uimage2D rtw_imap;
 
+uniform int frameCounter;
+
 vec2 screenToTex(vec3 screenPos) {
     vec3 pos = ndcPosToViewPos(screenPos * 2.0 - 1.0);
     pos = viewPosToLocalPos(pos);
@@ -40,11 +42,12 @@ void main() {
     float yFactor;
     bool inViewWedge = testInWedge(invoMapping, getPointBehind(yFactor), screenToTex(vec3(1.1, 0.5, 1.0)), screenToTex(vec3(-0.1, 0.5, 1.0)));
 
-    int value = 0;
+    float value = 0;
     
     if (inViewWedge || yFactor >= 0.95) {
-        value = max(int(min(300.0 - 5.0 * length(invoMapping - RTW_IMAP_RES / 2.0), 300.0)), 1);
+        value = max(min(300.0 - 5.0 * length(invoMapping - RTW_IMAP_RES / 2.0), 300.0), 1);
     }
 
-    imageStore(rtw_imap, invoMapping, uvec4(value, 0, 0, 1));
+    imageStore(rtw_imap, invoMapping, uvec4(int(value * ACCURACY_MULT), 0, 0, 1));
+
 }
