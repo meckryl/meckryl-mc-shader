@@ -2,15 +2,10 @@
 
 #include "/lib/globals.glsl"
 
+#ifdef SUBPIXEL_Y
+
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 3) out;
-
-/*in gl_Vertex
-{
-    vec4  gl_Position;
-    float gl_PointSize;
-    float gl_ClipDistance[];
-} gl_in[];*/
 
 in vertexData {
     vec2 texcoord;
@@ -69,6 +64,46 @@ void main() {
 
         EmitVertex();
     }
+    
+    EndPrimitive();
+}
+
+#else
+
+layout (triangles) in;
+layout (triangle_strip, max_vertices = 3) out;
+
+in vertexData {
+    vec2 texcoord;
+    vec4 glcolor;
+    flat uint blockID;
+} vIn[];
+
+out geomData {
+    vec2 texcoord;
+    vec4 glcolor;
+    flat uint blockID;
+};
+
+void main() {
+    gl_Position = gl_in[0].gl_Position;
+    texcoord = vIn[0].texcoord;
+    glcolor = vIn[0].glcolor;
+    blockID = vIn[0].blockID;
+    EmitVertex();
+
+    gl_Position = gl_in[1].gl_Position;
+    texcoord = vIn[1].texcoord;
+    glcolor = vIn[1].glcolor;
+    blockID = vIn[1].blockID;
+    EmitVertex();
+
+    gl_Position = gl_in[2].gl_Position;
+    texcoord = vIn[2].texcoord;
+    glcolor = vIn[2].glcolor;
+    blockID = vIn[2].blockID;
+    EmitVertex();
+
     
     EndPrimitive();
 }

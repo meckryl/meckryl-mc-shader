@@ -54,7 +54,7 @@ vec4 screenPosToShadowClipPos(vec3 screenPos, vec3 normal, out vec4 unbiased) {
 #else
     bias *= vec3(max((1.5 - NoL) * length(feetPlayerPos.xz) * 0.01, 0.15));
 #endif
-    feetPlayerPos += bias * 0.7;
+    feetPlayerPos += bias * 0.8;
 
 	shadowViewPos = (shadowModelView * vec4(feetPlayerPos, 1.0)).xyz;
 	vec4 shadowClipPos = shadowProjection * vec4(shadowViewPos, 1.0);
@@ -100,56 +100,18 @@ float getSkyStrength() {
 
 vec3 getMainLight(vec3 shadowScreenPos) {
     ivec2 shadowCoord = ivec2(shadowScreenPos.xy * shadowMapResolution);
-
-    //Check shadow0 (includes transparent geometry)
     float shadow0 = step(shadowScreenPos.z, texelFetch(shadowtex0, shadowCoord, 0).r);
-    float shadowVal = 0.0;
-
-    //If we are NOT in a shadow:
 	if(shadow0 == 1.0){
         return vec3(1.0);
-        //Sample the texel above
-		float shadow2 = step(shadowScreenPos.z, texelFetch(shadowtex1, shadowCoord + ivec2(0, 1), 0).r);
-
-        //If the new sample reveals a shadow when the original sample didn't:
-        if (shadow2 < shadow0) {
-            //Read in the precise y position of this edge
-            float trueY = texelFetch(shadowcolor1, ivec2(shadowScreenPos.xy * shadowMapResolution) + ivec2(0, 1), 0).r;
-
-            //Compare the unrounded shadow screen position of the sample to the precise y position of the edge
-            shadowVal = clamp01(shadowScreenPos.y * shadowMapResolution - trueY);
-        }
-
-        //If the sample is not within an edge, there is no shadow
-        if (shadowVal == 0.0) {
-            return vec3(1.0);
-        }
 	}
 
     float shadow1 = step(shadowScreenPos.z, texelFetch(shadowtex1, shadowCoord, 0).r);
-    shadowVal = 1.0;
-
-    //If we ARE in a shadow:
 	if(shadow1 == 0.0){
-        float shadow2 = step(shadowScreenPos.z, texelFetch(shadowtex1, shadowCoord - ivec2(0, 1), 0).r);
-
-        if (shadow2 > shadow1) {
-            float trueY = texelFetch(shadowcolor1, ivec2(shadowScreenPos.xy * shadowMapResolution), 0).r;
-            shadowVal = clamp01(shadowScreenPos.y * shadowMapResolution - trueY);
-        }
-        else{
-            return vec3(0.0);
-        }
-
-        //If the sample is within the edge, there is a shadow
-        if (shadowVal != 0) {
-            return vec3(1.0) * (1 - shadowVal);
-        }
+        return vec3(0.0);
 	}
 
 	vec4 shadowColor = texture(shadowcolor0, shadowScreenPos.xy);
-	return shadowColor.rgb * (1.0 - shadowColor.a) + vec3(1) * (1 - shadowVal);// * (1.0 - shadowVal);
-
+	return shadowColor.rgb * (1.0 - shadowColor.a);
 }
 
 vec3 getSoftShadow(vec2 texcoord, vec3 surfaceNorm) {
