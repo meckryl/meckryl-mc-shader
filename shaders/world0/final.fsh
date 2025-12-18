@@ -1,5 +1,6 @@
 #version 420 compatibility
 
+#include "/lib/globals.glsl"
 #include "/program/tonemap.fsh"
 
 uniform sampler2D colortex0;
@@ -8,6 +9,7 @@ uniform sampler2D shadowtex0;
 uniform sampler3D rayleigh_ss_LUT;
 
 in vec2 texcoord;
+uniform bool is_sneaking;
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
@@ -15,7 +17,13 @@ layout(location = 0) out vec4 color;
 void main() {
 	vec4 sampledColor = vec4(texture(colortex0, texcoord));
 
+#ifdef DEBUG
+    if (!is_sneaking) {
+        sampledColor.rgb = vec3(1.0) - exp(-1.0 * sampledColor.rgb * 1.5);
+    }
+#else
     sampledColor.rgb = vec3(1.0) - exp(-1.0 * sampledColor.rgb * 1.5);
+#endif
 
 	sampledColor.rgb = ACESFitted(sampledColor.rgb);
     //sampledColor.rgb = ACESApproximate(sampledColor.rgb);

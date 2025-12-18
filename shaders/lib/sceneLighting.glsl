@@ -45,16 +45,16 @@ vec4 screenPosToShadowClipPos(vec3 screenPos, vec3 normal, out vec4 unbiased) {
     vec3 shadowViewPos = (shadowModelView * vec4(feetPlayerPos, 1.0)).xyz;
 	unbiased = shadowProjection * vec4(shadowViewPos, 1.0);
 
-    vec3 bias = normal;
-    float biasWeight = clamp01(dot(normal, -getMainLightDirection()));
+    vec3 bias = normal; //World aligned normal of the surface the current fragment belongs to
+    float NoL = clamp01(dot(normal, -getMainLightDirection()));
 
 #ifdef RTW_ENABLED
-    bias *= vec3(max((1.0 - biasWeight) * min(length(feetPlayerPos.xz), 50) * 0.01, 0.10));
+    bias *= vec3(max((1.0 - NoL) * min(length(feetPlayerPos.xz), 50) * 0.01, 0.07));
 
 #else
-    bias *= vec3(max((2.0 - biasWeight) * length(feetPlayerPos.xz) * 0.01, 0.15));
+    bias *= vec3(max((1.5 - NoL) * length(feetPlayerPos.xz) * 0.01, 0.15));
 #endif
-    feetPlayerPos += bias * 0.8;
+    feetPlayerPos += bias * 0.7;
 
 	shadowViewPos = (shadowModelView * vec4(feetPlayerPos, 1.0)).xyz;
 	vec4 shadowClipPos = shadowProjection * vec4(shadowViewPos, 1.0);
@@ -98,25 +98,57 @@ float getSkyStrength() {
 	return mix(0.1, skylightStrength, getSunFactor());
 }
 
-vec3 getShadowNormal(vec3 shadowScreenPos) {
-	vec3 shadowEncodedNormal = texture(shadowcolor1, shadowScreenPos.xy).xyz;
-	vec3 shadowNormal = normalize((shadowEncodedNormal - 0.5) * 2.0);
-	return shadowNormal;
-}
-
 vec3 getMainLight(vec3 shadowScreenPos) {
-    float shadow0 = step(shadowScreenPos.z, texture(shadowtex0, shadowScreenPos.xy).r);
+    ivec2 shadowCoord = ivec2(shadowScreenPos.xy * shadowMapResolution);
+
+    //Check shadow0 (includes transparent geometry)
+    float shadow0 = step(shadowScreenPos.z, texelFetch(shadowtex0, shadowCoord, 0).r);
+    float shadowVal = 0.0;
+
+    //If we are NOT in a shadow:
 	if(shadow0 == 1.0){
-		return vec3(1.0);
+        return vec3(1.0);
+        //Sample the texel above
+		float shadow2 = step(shadowScreenPos.z, texelFetch(shadowtex1, shadowCoord + ivec2(0, 1), 0).r);
+
+        //If the new sample reveals a shadow when the original sample didn't:
+        if (shadow2 < shadow0) {
+            //Read in the precise y position of this edge
+            float trueY = texelFetch(shadowcolor1, ivec2(shadowScreenPos.xy * shadowMapResolution) + ivec2(0, 1), 0).r;
+
+            //Compare the unrounded shadow screen position of the sample to the precise y position of the edge
+            shadowVal = clamp01(shadowScreenPos.y * shadowMapResolution - trueY);
+        }
+
+        //If the sample is not within an edge, there is no shadow
+        if (shadowVal == 0.0) {
+            return vec3(1.0);
+        }
 	}
 
-    float shadow1 = step(shadowScreenPos.z, texture(shadowtex1, shadowScreenPos.xy).r);
+    float shadow1 = step(shadowScreenPos.z, texelFetch(shadowtex1, shadowCoord, 0).r);
+    shadowVal = 1.0;
+
+    //If we ARE in a shadow:
 	if(shadow1 == 0.0){
-		return vec3(0.0);
+        float shadow2 = step(shadowScreenPos.z, texelFetch(shadowtex1, shadowCoord - ivec2(0, 1), 0).r);
+
+        if (shadow2 > shadow1) {
+            float trueY = texelFetch(shadowcolor1, ivec2(shadowScreenPos.xy * shadowMapResolution), 0).r;
+            shadowVal = clamp01(shadowScreenPos.y * shadowMapResolution - trueY);
+        }
+        else{
+            return vec3(0.0);
+        }
+
+        //If the sample is within the edge, there is a shadow
+        if (shadowVal != 0) {
+            return vec3(1.0) * (1 - shadowVal);
+        }
 	}
 
 	vec4 shadowColor = texture(shadowcolor0, shadowScreenPos.xy);
-	return shadowColor.rgb * (1.0 - shadowColor.a);
+	return shadowColor.rgb * (1.0 - shadowColor.a) + vec3(1) * (1 - shadowVal);// * (1.0 - shadowVal);
 
 }
 
@@ -137,18 +169,12 @@ vec3 getSoftShadow(vec2 texcoord, vec3 surfaceNorm) {
 	vec3 shadowAccum = vec3(0.0);
 
 	for(int i = 0; i < SHADOW_SAMPLES; i++) {
-        vec2 sampleOffset = getVogelPoint(i, SHADOW_SAMPLES, SHADOW_RADIUS * 2.0) * rotation;
-        //vec2 sampleOffset = getVogelPoint(i, SHADOW_SAMPLES, 0) * rotation;
+        vec2 sampleOffset = getVogelPoint(i, SHADOW_SAMPLES, SHADOW_RADIUS) * rotation;
 		sampleOffset /= shadowMapResolution;
-        vec4 offsetUnbiasedSClipPos = unbiasedSClipPos + vec4(sampleOffset, 0.0, 0.0);
 		vec4 offsetShadowClipPos = shadowClipPos;// + vec4(sampleOffset, 0.0, 0.0);
 #ifdef RTW_ENABLED
-        //offsetUnbiasedSClipPos.xy = mapPos(offsetUnbiasedSClipPos.xyz);
-        //offsetUnbiasedSClipPos.z *= 0.8;
-
         offsetShadowClipPos.xy = mapPos(offsetShadowClipPos.xyz);
-        offsetShadowClipPos.z *= 0.8;
-        offsetShadowClipPos += vec4(sampleOffset, 0.0, 0.0);
+        offsetShadowClipPos.z *= 0.4;
 #else
         offsetShadowClipPos.xyz = distortShadowClipPos(offsetShadowClipPos.xyz);
 #endif
@@ -156,13 +182,6 @@ vec3 getSoftShadow(vec2 texcoord, vec3 surfaceNorm) {
 		vec3 shadowScreenPos = shadowNDCPos * 0.5 + 0.5;
 
 		vec3 mainLightBiased = getMainLight(shadowScreenPos);
-
-        //shadowNDCPos = offsetUnbiasedSClipPos.xyz / offsetUnbiasedSClipPos.w;
-		//shadowScreenPos = shadowNDCPos * 0.5 + 0.5;
-
-        //vec3 mainLightUnbiased = getMainLight(shadowScreenPos);
-
-        //shadowAccum += (mainLightBiased.r < mainLightUnbiased.r) ? (mainLightBiased + mainLightUnbiased) * 0.5 : mainLightUnbiased;
         shadowAccum += mainLightBiased;
 	}
 

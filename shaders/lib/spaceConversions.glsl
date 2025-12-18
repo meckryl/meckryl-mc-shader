@@ -38,7 +38,7 @@ vec3 sClipPosToSViewPos(vec4 shadowClipPos) {
 }
 
 vec4 sViewPosToSClipPos(vec3 shadowViewPos) {
-    return (gbufferProjection * vec4(shadowViewPos, 1.0));
+    return (shadowProjection * vec4(shadowViewPos, 1.0));
 }
 
 vec3 viewPosToLocalPos(vec3 viewPos) {
@@ -79,6 +79,10 @@ vec3 sViewPosToSNDCPos(vec3 viewPos) {
 
 vec3 sNDCPosToSViewPos(vec3 ndcPos) {
     return projectAndDivide(shadowProjectionInverse, ndcPos);
+}
+
+vec3 sClipPosToSNDCPos(vec4 sClipPos) {
+    return sClipPos.xyz / sClipPos.w;
 }
 
 #endif

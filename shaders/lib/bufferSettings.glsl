@@ -16,6 +16,8 @@ const int colortex13Format = RGBA8;
 const int colortex14Format = RGBA8;
 const int colortex15Format = RGBA8;
 
+const int shadowcolor1Format = R32F;
+
 const bool colortex0Clear  = true;
 const bool colortex1Clear  = true;
 const bool colortex2Clear  = true;

@@ -4,7 +4,9 @@ const bool shadowtex0Nearest = true;
 const bool shadowtex1Nearest = true;
 const bool shadowcolor0Nearest = false;
 
-layout (r32ui) uniform restrict uimage2D rtw_imap;
+#ifndef COMPUTE
+layout (r32ui) uniform uimage2D rtw_imap;
+#endif
 
 float lerpSum(float val, int col) {
     int floorVal = int(floor(val));
@@ -29,19 +31,36 @@ vec2 mapPos(vec3 fromPos) {
 
     vec2 texelPos = (ndcPos.xy * 0.5 + 0.5) * RTW_IMAP_RES;
 
-    float partialSumX = lerpSum(min(texelPos.x, RTW_IMAP_RES - 1.0), 1);
-    //float partialSumX = texelPos.x;
-    float fullSumX = imageLoad(rtw_imap, ivec2(1, RTW_IMAP_RES - 1.0)).x;
-    //float fullSumX = 511;
+    float partialSumX = lerpSum(min(texelPos.x, RTW_IMAP_RES - 1), 1);
+    float fullSumX = imageLoad(rtw_imap, ivec2(1, RTW_IMAP_RES - 1)).x;
     resultPos.x = partialSumX / fullSumX - (texelPos.x + 1) / float(RTW_IMAP_RES);
 
-    float partialSumY = lerpSum(min(texelPos.y, RTW_IMAP_RES - 1.0), 0);
-    //float partialSumY = texelPos.y;
-    float fullSumY = imageLoad(rtw_imap, ivec2(0, RTW_IMAP_RES - 1.0)).x;
-    //float fullSumY = 511;
+    float partialSumY = lerpSum(min(texelPos.y, RTW_IMAP_RES - 1), 0);
+    float fullSumY = imageLoad(rtw_imap, ivec2(0, RTW_IMAP_RES - 1)).x;
     resultPos.y = partialSumY / fullSumY - (texelPos.y + 1) / float(RTW_IMAP_RES);
 
     ndcPos += resultPos * 2.0; //The offset calculated above is the offset in screen space. To offset the NDC position, this needs to be doubled.
 
     return ndcPos;
+}
+
+vec2 warpFromTexel(vec2 texelPos) {
+    vec2 resultPos = vec2(0.0);
+    vec2 ndcPos = (texelPos / float(RTW_IMAP_RES)) * 2.0 - 1.0;
+
+    float partialSumX = imageLoad(rtw_imap, ivec2(1, min(texelPos.x - 1, RTW_IMAP_RES - 1))).x;
+    float fullSumX = max(imageLoad(rtw_imap, ivec2(1, RTW_IMAP_RES - 1)).x, 1);
+    resultPos.x = partialSumX / fullSumX - (texelPos.x) / float(RTW_IMAP_RES);
+
+    float partialSumY = imageLoad(rtw_imap, ivec2(0, min(texelPos.y - 1, RTW_IMAP_RES - 1))).x;
+    float fullSumY = max(imageLoad(rtw_imap, ivec2(0, RTW_IMAP_RES - 1)).x, 1);
+    resultPos.y = partialSumY / fullSumY - (texelPos.y) / float(RTW_IMAP_RES);
+
+    ndcPos += resultPos * 2.0; //The offset calculated above is the offset in screen space. To offset the NDC position, this needs to be doubled.
+
+    return ndcPos;
+}
+
+float sampleUnwarped(vec2 coord, sampler2D shadowSampler) {
+    return texture(shadowSampler, mapPos(vec3(coord, 0.0))).r;
 }

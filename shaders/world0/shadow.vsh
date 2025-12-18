@@ -10,10 +10,11 @@
 #endif
 #include "/lib/materials/materials.glsl"
 
-out vec2 texcoord;
-out vec4 glcolor;
-
-flat out uint blockID;
+out vertexData {
+    vec2 texcoord;
+    vec4 glcolor;
+    flat uint blockID;
+};
 
 void main() {
     gl_Position = ftransform();
@@ -22,7 +23,7 @@ void main() {
 
 #ifdef RTW_ENABLED
     gl_Position.xy = mapPos(gl_Position.xyz);
-    gl_Position.z *= 0.8;
+    gl_Position.z *= 0.4;
 #else
     gl_Position.xyz = distortShadowClipPos(gl_Position.xyz);
 #endif

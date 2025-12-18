@@ -11,13 +11,18 @@ const ivec3 workGroups = ivec3(RTW_IMAP_RES, 1, 1);
 
 layout (r32ui) uniform uimage2D rtw_imap;
 
+#include "/lib/RTW/warp.glsl"
+
 uniform int frameCounter;
+uniform sampler2D shadowtex0;
+
+const float SMOOTH_BOUND = 0.995;
 
 vec2 screenToTex(vec3 screenPos) {
     vec3 pos = ndcPosToViewPos(screenPos * 2.0 - 1.0);
     pos = viewPosToLocalPos(pos);
     pos = localPosToSViewPos(pos);
-    pos = sViewPosToSNDCPos(pos);
+    pos = 4.0 * sViewPosToSNDCPos(pos);
     
     return (pos.xy * 0.5 + 0.5) * RTW_IMAP_RES; 
 }
@@ -37,17 +42,17 @@ void main() {
     uint workGroupID = gl_WorkGroupID.x;
     uint localID = gl_LocalInvocationID.x;
 
-    ivec2 invoMapping = ivec2(localID, workGroupID);
+    vec2 invoMapping = vec2(localID + 4, workGroupID);
+    if (invoMapping.x >= RTW_IMAP_RES) return;
 
-    float yFactor;
-    bool inViewWedge = testInWedge(invoMapping, getPointBehind(yFactor), screenToTex(vec3(1.1, 0.5, 1.0)), screenToTex(vec3(-0.1, 0.5, 1.0)));
-
-    float value = 0;
+    float dist = length(invoMapping - 0.5 * RTW_IMAP_RES);
+    float value = max(min(240.0 - 10.0 * dist, 240.0), 0) * 8.0;
     
-    if (inViewWedge || yFactor >= 0.95) {
-        value = max(min(300.0 - 5.0 * length(invoMapping - RTW_IMAP_RES / 2.0), 300.0), 1);
-    }
 
-    imageStore(rtw_imap, invoMapping, uvec4(int(value * ACCURACY_MULT), 0, 0, 1));
+    vec2 mappedPos = warpFromTexel(invoMapping);
 
+    value += (mappedPos.x >= -SMOOTH_BOUND && mappedPos.x <= SMOOTH_BOUND && mappedPos.y >= -SMOOTH_BOUND && mappedPos.y <= SMOOTH_BOUND) ? 1.0 : 0.0;
+
+
+    imageStore(rtw_imap, ivec2(invoMapping), uvec4(value, 0, 0, 1));
 }

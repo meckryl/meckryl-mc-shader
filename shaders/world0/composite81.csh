@@ -14,30 +14,29 @@ uniform sampler2D depthtex1;
 
 layout (r32ui) uniform uimage2D rtw_imap;
 
-uniform float far;
 uniform vec3 shadowLightPosition;
-uniform int frameCounter;
 
 void main() {
     uint workGroupID = gl_WorkGroupID.x;
     uint localID = gl_LocalInvocationID.x;
 
-    vec2 invoMapping = vec2(float(localID + 256.0 * gl_WorkGroupID.y) / 2560.0 , float(workGroupID) / 1440.0);
+    ivec2 invoMapping = ivec2(localID + 256.0 * gl_WorkGroupID.y, workGroupID);
+    vec2 screenPos = vec2(float(invoMapping.x) / viewWidth, float(invoMapping.y) / viewHeight);
 
-    float depth = texelFetch(depthtex1, ivec2(invoMapping * screenSize), 0).x;
+    float depth = texelFetch(depthtex1, ivec2(invoMapping), 0).x;
     if (depth >= 1.0) return;
     
-    vec3 pos = vec3(invoMapping, depth);
+    vec3 pos = vec3(screenPos, depth);
     pos = ndcPosToViewPos(pos * 2.0 - 1.0);
     pos = viewPosToLocalPos(pos);
-    float dist = length(pos.xy);
     pos = localPosToSViewPos(pos);
     pos = sViewPosToSNDCPos(pos);
 
-    int val = 1;// * (1 - int(depth));
+    float val = 2.0;
+    //val *= max(1.0 - clamp01(dot(texelFetch(colortex2, ivec2(invoMapping), 0).xyz * 2.0 - 1.0, normalize(viewPosToLocalPos(shadowLightPosition)))), 0.0);
+    //val += 1.0;
 
     ivec2 texelPos = ivec2((pos.xy * 0.5 + 0.5) * RTW_IMAP_RES);
 
-    imageAtomicAdd(rtw_imap, texelPos, val * ACCURACY_MULT);
-    //imageStore(rtw_imap, texelPos, uvec4(1));
+    imageAtomicAdd(rtw_imap, texelPos, int(val));
 }

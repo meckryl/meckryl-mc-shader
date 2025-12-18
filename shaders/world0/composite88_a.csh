@@ -17,7 +17,7 @@ void main() {
     uint workGroupID = gl_WorkGroupID.x;
     uint localID = gl_LocalInvocationID.x;
 
-    ivec2 invoMapping = ivec2(workGroupID, localID + 0.5 * BLUR_RANGE);
+    ivec2 invoMapping = ivec2(workGroupID, localID);
 
     float sum = 0.0;    
     float current = 0.0;
@@ -25,11 +25,16 @@ void main() {
         ivec2 currentTexel = invoMapping;
         currentTexel.y += i - int(BLUR_RANGE * 0.5);
 
-        float sampleValue = imageLoad(rtw_imap, currentTexel).x;
-        sum += sampleValue;
+        if (currentTexel.y == clamp(currentTexel.y, 0, RTW_IMAP_RES)) {
+            float sampleValue = imageLoad(rtw_imap, currentTexel).x;
+            sum += sampleValue;
+        }
+        else {
+            sum += 0;
+        }
     }
 
     sum /= 1.0 + BLUR_RANGE * 2.0;
 
-    imageAtomicMax(rtw_imap, invoMapping + ivec2(2, 0), int(sum));
+    imageAtomicMax(rtw_imap, invoMapping + ivec2(2, 0), max(int(sum), imageLoad(rtw_imap, invoMapping).x));
 }
