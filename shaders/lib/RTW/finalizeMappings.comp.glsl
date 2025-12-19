@@ -12,5 +12,5 @@ void main() {
 
     float result = (partialSum / fullSum) * RTW_IMAP_RES - 1;
 
-    imageStore(rtw_imap, ivec2(workGroupID + 2, localID), uvec4(result, 0, 0, 1));
+    imageStore(rtw_imap, ivec2(workGroupID + 2, localID), uvec4(result * RTW_IMAP_RES, 0, 0, 1));
 }

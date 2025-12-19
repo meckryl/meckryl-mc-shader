@@ -6,13 +6,17 @@ uniform vec3 sunPosition;
 uniform vec3 moonPosition;
 
 out vec2 texcoord;
+out float isSun;
+
 void main() {
     vec4 clipPos = ftransform();
     
     const float scale = 0.5;
 
     vec3 viewPos = clipPosToViewPos(clipPos); 
-    vec3 center = (distance(viewPos, sunPosition) < distance(viewPos, moonPosition)) ? sunPosition : moonPosition;
+    float deltaDistance = distance(viewPos, moonPosition) - distance(viewPos, sunPosition);
+    isSun = deltaDistance;
+    vec3 center = (isSun >= 0.0) ? sunPosition : moonPosition;
     center = viewPosToLocalPos(center);
 
     vec3 offset = viewPosToLocalPos(viewPos) - center;

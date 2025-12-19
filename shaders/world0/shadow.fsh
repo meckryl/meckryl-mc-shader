@@ -6,7 +6,7 @@ uniform sampler2D gtexture;
 
 uniform float alphaTestRef;
 
-in geomData {
+in vertexData {
     vec2 texcoord;
     vec4 glcolor;
     flat uint blockID;

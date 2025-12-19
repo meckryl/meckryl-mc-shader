@@ -74,6 +74,6 @@ void main() {
     barrier();
 
     if (localID == 0) {
-        imageStore(rtw_imap, ivec2(isColumn, workGroupID), uvec4(min(groupData[0], 7500), 0, 0, 1));
+        imageStore(rtw_imap, ivec2(isColumn, workGroupID), uvec4(min(groupData[0], 10000), 0, 0, 1));
     }
 }

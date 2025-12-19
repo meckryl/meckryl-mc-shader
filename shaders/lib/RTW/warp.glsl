@@ -22,7 +22,7 @@ vec2 mapPos(vec3 fromPos) {
     resultPos.x = lerpSum(min(texelPos.x, RTW_IMAP_RES - 1), 3);
     resultPos.y = lerpSum(min(texelPos.y, RTW_IMAP_RES - 1), 2);
 
-    resultPos = resultPos * inverse_res * 2.0 - 1.0;
+    resultPos = resultPos * inverse_res * inverse_res * 2.0 - 1.0;
 
     return resultPos;
 }
@@ -32,7 +32,7 @@ vec2 warpFromTexel(vec2 texelPos) {
     resultPos.x = lerpSum(min(texelPos.x, RTW_IMAP_RES - 1), 3);
     resultPos.y = lerpSum(min(texelPos.y, RTW_IMAP_RES - 1), 2);
 
-    resultPos = resultPos * 2.0 * inverse_res - 1.0;
+    resultPos = resultPos * 2.0 * inverse_res * inverse_res - 1.0;
 
     return resultPos;
 }

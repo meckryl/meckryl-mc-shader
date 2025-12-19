@@ -36,11 +36,6 @@ vec3 getSkyColor(vec2 screenCoord) {
     vec3 transmittance;
     vec3 sky = GetSkyRadiance(atmosphere, transmittance_LUT, scattering_LUT, optional_mie_scattering_LUT, camPosition, local_pos, 0.0, sun_angle, transmittance);
 
-    if (dot(sun_angle, local_pos) > cos(atmosphere.sun_angular_radius)){
-        float sun_solid_angle = 2.0 * PI * (1.0 - cos(atmosphere.sun_angular_radius));
-        //sky += transmittance * atmosphere.solar_irradiance * (1.0/sun_solid_angle);
-    }
-
     float PoV = dot(camPosition, local_pos);
     float mu = PoV / height;
 

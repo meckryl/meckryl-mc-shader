@@ -32,8 +32,8 @@ void displayShadowTex() {
 
 void main() {
     if (is_sneaking) {
-        displayIMap();
-        //displayShadowTex();
+        //displayIMap();
+        displayShadowTex();
         //color.rgb = texture(shadowcolor1, texcoord).rgb * 0.5 / shadowMapResolution;
         
     }
