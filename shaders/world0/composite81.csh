@@ -11,6 +11,7 @@ const ivec3 workGroups = ivec3(1440, 10, 1);
 
 uniform sampler2D colortex2;
 uniform sampler2D depthtex2;
+uniform bool sameViewPos;
 
 layout (r32ui) uniform uimage2D rtw_imap;
 
@@ -21,6 +22,11 @@ void main() {
     uint localID = gl_LocalInvocationID.x;
 
     ivec2 invoMapping = ivec2(localID + 256.0 * gl_WorkGroupID.y, workGroupID);
+    if (sameViewPos) {
+        float value = imageLoad(rtw_imap, ivec2(invoMapping)).x;
+        imageStore(rtw_imap, ivec2(invoMapping), uvec4(value, 0, 0, 1));
+        return;
+    }
     vec2 screenPos = vec2(float(invoMapping.x) / viewWidth, float(invoMapping.y) / viewHeight);
 
     float depth = texelFetch(depthtex2, ivec2(invoMapping), 0).x;
@@ -38,7 +44,6 @@ void main() {
     pos = sViewPosToSNDCPos(pos);
 
     float val = 20.0;
-    //val *= max(1.0 - clamp01(dot(texelFetch(colortex2, ivec2(invoMapping), 0).xyz * 2.0 - 1.0, normalize(viewPosToLocalPos(shadowLightPosition)))), 0.0);
 
     ivec2 texelPos = ivec2((pos.xy * 0.5 + 0.5) * RTW_IMAP_RES);
 

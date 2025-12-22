@@ -16,6 +16,8 @@ layout (r32ui) uniform uimage2D rtw_imap;
 uniform int frameCounter;
 uniform sampler2D shadowtex0;
 
+uniform bool sameViewPos;
+
 const float SMOOTH_BOUND = 0.995;
 
 void main() {
@@ -23,6 +25,11 @@ void main() {
     uint localID = gl_LocalInvocationID.x;
 
     vec2 invoMapping = vec2(localID + 4, workGroupID);
+    if (sameViewPos) {
+        float value = imageLoad(rtw_imap, ivec2(invoMapping)).x;
+        imageStore(rtw_imap, ivec2(invoMapping), uvec4(value, 0, 0, 1));
+        return;
+    }
     if (invoMapping.x >= RTW_IMAP_RES) return;
 
     float dist = length(invoMapping - 0.5 * RTW_IMAP_RES);
@@ -34,5 +41,5 @@ void main() {
     value += (mappedPos.x >= -SMOOTH_BOUND && mappedPos.x <= SMOOTH_BOUND && mappedPos.y >= -SMOOTH_BOUND && mappedPos.y <= SMOOTH_BOUND) ? 5.0 : 0.0;
 
 
-    imageStore(rtw_imap, ivec2(invoMapping), uvec4(value, 0, 0, 1));
+    if (!sameViewPos) imageStore(rtw_imap, ivec2(invoMapping), uvec4(value, 0, 0, 1));
 }

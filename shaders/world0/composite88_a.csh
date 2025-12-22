@@ -12,6 +12,7 @@ layout (r32ui) uniform uimage2D rtw_imap;
 uniform sampler2D depthtex1;
 
 uniform int frameCounter;
+uniform bool sameViewPos;
 
 void main() {
     uint workGroupID = gl_WorkGroupID.x;

@@ -6,7 +6,7 @@ uniform sampler2D colortex0;
 uniform sampler2D shadowtex0;
 uniform sampler2D shadowcolor1;
 
-
+uniform bool sameViewPos;
 
 layout (r32ui) uniform restrict uimage2D rtw_imap;
 uniform sampler2D rtw_imap_smpl;
@@ -20,7 +20,12 @@ layout(location = 0) out vec4 color;
 
 void displayIMap() {
     ivec2 texelPos = ivec2(texcoord * RTW_IMAP_RES);
-    color.rgb = imageLoad(rtw_imap, texelPos).rgb / 100.0;
+    if (!sameViewPos) {
+        color.rgb = imageLoad(rtw_imap, texelPos).rgb / 100.0;
+    }
+    else {
+        color.rgb = imageLoad(rtw_imap, texelPos).grb / 100.0;
+    }
     color.a = 1.0;
 }
 

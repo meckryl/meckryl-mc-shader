@@ -1,9 +1,12 @@
 #extension GL_KHR_shader_subgroup_basic : enable
+#extension GL_KHR_shader_subgroup_vote : enable
 #extension GL_KHR_shader_subgroup_arithmetic : enable
 
 layout(local_size_x = RTW_IMAP_RES, local_size_y = 1, local_size_z = 1) in; //Each work group will be summing up at most RTW_IMAP_RES items
 const ivec3 workGroups = ivec3(RTW_IMAP_RES, 2, 1); //The number of work groups is twice the number of rows, i.e. one work group per row and another per column.
 shared float groupData[int(RTW_IMAP_RES)]; //Assumes we have at least a subgroup size of 8
+
+uniform bool sameViewPos;
 
 layout (r32ui) uniform restrict uimage2D rtw_imap;
 //uniform sampler2D rtw_imap_smpl;
