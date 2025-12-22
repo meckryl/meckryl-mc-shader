@@ -35,12 +35,12 @@ void main() {
     {
         float ival = 0.0;
         if (invoMapping.x < RTW_IMAP_RES) {
-            ival = min(imageLoad(rtw_imap, invoMapping).x, int((300.0 * (1.0 - length(invoMapping.xy - 0.5 * float(RTW_IMAP_RES)) / float(RTW_IMAP_RES))) * ACCURACY_MULT));
-            //ival = max(imageLoad(rtw_imap, invoMapping).x, 0.0);
+            ival = min(imageLoad(rtw_imap, invoMapping).x, int((8000.0 * (1.0 - length(invoMapping.xy / float(RTW_IMAP_RES) - 0.5))) * ACCURACY_MULT));
+            //ival = min(imageLoad(rtw_imap, invoMapping).x, 5000.0);
         }
         groupData[localID] = 0.0;
 
-        float groupResult = subgroupAdd(ival);
+        float groupResult = subgroupMax(ival);
         if (subgroupInvoID == 0) {
             groupData[subgroupID] = groupResult;
         }
@@ -61,7 +61,7 @@ void main() {
             ival = 0;
         }
         
-        groupResult = subgroupAdd(ival);
+        groupResult = subgroupMax(ival);
         if (subgroupInvoID == 0) {
             groupData[subgroupID] = groupResult;
         }
@@ -74,6 +74,6 @@ void main() {
     barrier();
 
     if (localID == 0) {
-        imageStore(rtw_imap, ivec2(isColumn, workGroupID), uvec4(min(groupData[0], 10000), 0, 0, 1));
+        imageStore(rtw_imap, ivec2(isColumn, workGroupID), uvec4(groupData[0], 0, 0, 1));
     }
 }

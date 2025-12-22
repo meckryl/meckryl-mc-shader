@@ -1,6 +1,6 @@
 #version 460 compatibility
 
-#define BLUR_RANGE 11
+#define BLUR_RANGE 17
 
 #include "/lib/globals.glsl"
 

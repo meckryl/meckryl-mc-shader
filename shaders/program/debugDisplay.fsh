@@ -20,20 +20,26 @@ layout(location = 0) out vec4 color;
 
 void displayIMap() {
     ivec2 texelPos = ivec2(texcoord * RTW_IMAP_RES);
-    color.rgb = imageLoad(rtw_imap, texelPos).rgb;
+    color.rgb = imageLoad(rtw_imap, texelPos).rgb / 100.0;
     color.a = 1.0;
 }
 
 void displayShadowTex() {
-    float shadow = texture(shadowtex0, texcoord).r;
-    color.rgb = vec3(pow(shadow, 3.0));
-    color.a = 1.0;
+    ivec2 texelPos = ivec2(texcoord * screenSize * (2048.0 / viewHeight));
+    if (texelPos.x >= 2048.0) {
+        color = texture(colortex0, texcoord);
+    }
+    else {
+        float shadow = texelFetch(shadowtex0, texelPos, 0).r;
+        color.rgb = vec3(pow(shadow, 3.0));
+        color.a = 1.0;
+    }
 }
 
 void main() {
     if (is_sneaking) {
-        //displayIMap();
-        displayShadowTex();
+        displayIMap();
+        //displayShadowTex();
         //color.rgb = texture(shadowcolor1, texcoord).rgb * 0.5 / shadowMapResolution;
         
     }

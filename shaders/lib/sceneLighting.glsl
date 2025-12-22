@@ -49,12 +49,12 @@ vec4 screenPosToShadowClipPos(vec3 screenPos, vec3 normal, out vec4 unbiased) {
     float NoL = clamp01(dot(normal, -getMainLightDirection()));
 
 #ifdef RTW_ENABLED
-    bias *= vec3(max((1.0 - NoL) * min(length(feetPlayerPos.xz), 50) * 0.01, 0.07));
+    bias *= vec3(max((1.0 - NoL) * min(length(feetPlayerPos.xz), 100) * 0.01, 0.07));
 
 #else
     bias *= vec3(max((1.5 - NoL) * length(feetPlayerPos.xz) * 0.01, 0.15));
 #endif
-    feetPlayerPos += bias * 0.8;
+    feetPlayerPos += bias * 0.6;
 
 	shadowViewPos = (shadowModelView * vec4(feetPlayerPos, 1.0)).xyz;
 	vec4 shadowClipPos = shadowProjection * vec4(shadowViewPos, 1.0);
@@ -133,9 +133,9 @@ vec3 getSoftShadow(vec2 texcoord, vec3 surfaceNorm) {
 	for(int i = 0; i < SHADOW_SAMPLES; i++) {
         vec2 sampleOffset = getVogelPoint(i, SHADOW_SAMPLES, SHADOW_RADIUS) * rotation;
 		sampleOffset /= shadowMapResolution;
-		vec4 offsetShadowClipPos = shadowClipPos;// + vec4(sampleOffset, 0.0, 0.0);
+		vec4 offsetShadowClipPos = shadowClipPos;
 #ifdef RTW_ENABLED
-        offsetShadowClipPos.xy = mapPos(offsetShadowClipPos.xyz);
+        offsetShadowClipPos.xy = mapPos(offsetShadowClipPos.xyz)  + sampleOffset * 5.0;
         offsetShadowClipPos.z *= 0.4;
 #else
         offsetShadowClipPos.xyz = distortShadowClipPos(offsetShadowClipPos.xyz);
