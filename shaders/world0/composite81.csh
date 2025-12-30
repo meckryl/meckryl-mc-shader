@@ -43,7 +43,7 @@ void main() {
     pos = localPosToSViewPos(pos);
     pos = sViewPosToSNDCPos(pos);
 
-    float val = 20.0;
+    float val = 10.0;
 
     ivec2 texelPos = ivec2((pos.xy * 0.5 + 0.5) * RTW_IMAP_RES);
 

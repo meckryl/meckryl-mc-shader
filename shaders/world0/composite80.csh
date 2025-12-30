@@ -33,7 +33,7 @@ void main() {
     if (invoMapping.x >= RTW_IMAP_RES) return;
 
     float dist = length(invoMapping - 0.5 * RTW_IMAP_RES);
-    float value = max(min(240.0 - 10.0 * dist, 240.0), 0) * 80.0;
+    float value = max(min(240.0 - 10.0 * dist, 240.0), 0) * 200.0;
     
 
     vec2 mappedPos = warpFromTexel(invoMapping);

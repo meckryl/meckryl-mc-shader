@@ -11,6 +11,8 @@ uniform sampler3D rayleigh_ss_LUT;
 in vec2 texcoord;
 uniform bool is_sneaking;
 
+const float exposure = 2.0;
+
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
 
@@ -19,10 +21,10 @@ void main() {
 
 #ifdef DEBUG
     if (!is_sneaking) {
-        sampledColor.rgb = vec3(1.0) - exp(-1.0 * sampledColor.rgb * 1.5);
+        sampledColor.rgb = vec3(1.0) - exp(-1.0 * sampledColor.rgb * exposure);
     }
 #else
-    sampledColor.rgb = vec3(1.0) - exp(-1.0 * sampledColor.rgb * 1.5);
+    sampledColor.rgb = vec3(1.0) - exp(-1.0 * sampledColor.rgb * exposure);
 #endif
 
 	sampledColor.rgb = ACESFitted(sampledColor.rgb);

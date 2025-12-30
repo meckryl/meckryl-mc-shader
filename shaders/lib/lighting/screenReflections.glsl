@@ -9,11 +9,9 @@ float interpolateZ(float zStart, float zEnd, float s) {
     return 1.0/inverse;
 }
 
-vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler, sampler2D depthSampler, sampler2D normalSampler, out vec2 hitPos, out bool hitSky) {
+vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler, sampler2D depthSampler, sampler2D normalSampler, out vec3 viewRay, out bool hitSky) {
     vec3 viewPos = ndcPosToViewPos(screenPos * 2.0 - 1.0);
     float localDist = -viewPos.z;
-
-    hitPos = vec2(-1, -1);
 
     bool hit0 = false;
     bool hit1 = false;
@@ -32,6 +30,7 @@ vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler
 
     vec3 incidence = normalize(viewPos);
     vec3 ray = normalize(reflect(incidence, normalize(vsurfaceNorm)));
+    viewRay = ray;
 
     ray *= maximumDepth;
     vec3 endPos = ray + viewPos;
@@ -86,7 +85,6 @@ vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler
         lastMiss = s;
     }
     if (!hit0 && !screenEdge) {
-        hitPos = currentFrag / screenSize;
         lastHit = currentFrag;
         hitSky = true;
     }
