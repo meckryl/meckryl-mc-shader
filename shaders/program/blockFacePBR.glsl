@@ -48,7 +48,8 @@ float getGeometricShadowingReflected(vec3 x, vec3 normal, vec3 halfDir, float ro
     return numerator / denom;
 }
 
-float getReflectionFactor(vec2 screenCoord, float smoothness, float reflectance) {
+float getReflectionFactor(vec2 screenCoord, float smoothness, float reflectance, out float fresnel) {
+    //if (abs(smoothness - 0.5) < 0.005 && abs(reflectance - 0.05) < 0.005) return 1.0;
     float roughness = pow2(1.0 - smoothness);
 
     vec3 screenPos = vec3(screenCoord, texture(depthtex0, screenCoord).x);
@@ -60,28 +61,24 @@ float getReflectionFactor(vec2 screenCoord, float smoothness, float reflectance)
     vec3 halfDirection = surfaceNorm;
     vec3 reflectionDirection = normalize(reflect(-viewDirection, surfaceNorm));
 
-    float NoV = dot(surfaceNorm, viewDirection);
-    float HoV = dot(halfDirection, viewDirection);
-    float NoL = clamp01(dot(halfDirection, reflectionDirection));
+    float NoV = satDot(surfaceNorm, viewDirection);
+    float HoV = satDot(halfDirection, viewDirection);
+    float NoL = satDot(halfDirection, reflectionDirection);
 
-    //float normalDistribution = pow2(roughness);
-    //normalDistribution /= PI * pow2(pow2(NoH) * (pow2(roughness) - 1) + 1);
+    float normalDistribution = (1.0 - roughness) / PI;
 
-    float normalDistribution = getNormalDistribution(surfaceNorm, halfDirection, roughness);
+    //float normalDistribution = getNormalDistribution(surfaceNorm, halfDirection, roughness);
+    //float normalDistribution = 1.0;
 
-    //float k = pow2(roughness + 1) * 0.125;
-    //float k = pow2(roughness) * 0.5;
-    //float geometryFunction = (NoV / (NoV * (1 - k) + k)) * (NoL / (NoL * (1 - k) + k));
+    float k = pow2(roughness + 1) * 0.125;
+    float geometryFunction = pow2(NoV / (NoV * (1 - k) + k));
 
-    float geometryFunction = getGeometricShadowingReflected(viewDirection, surfaceNorm, halfDirection, roughness);
-    geometryFunction *= getGeometricShadowingReflected(reflectionDirection, surfaceNorm, halfDirection, roughness);
+    fresnel = (reflectance + (1.0 - reflectance) * pow(1.0 - (HoV), 5.0)); //Approximation, should replace to support metalic values
 
-    float fresnel = reflectance + (1 - reflectance) * pow(1 - (HoV), 5); //Approximation, should replace to support metalic values
+    float reflectionFactor = normalDistribution * geometryFunction;
+    reflectionFactor /= 4 * pow2(NoV);
 
-    float reflectionFactor = normalDistribution * fresnel * geometryFunction;
-    reflectionFactor /= 4 * NoV * NoL;
-
-    return clamp01(reflectionFactor);
+    return reflectionFactor;
 }
 
 vec3 getSurfaceRadiance(vec2 screenCoord, vec3 albedo) {

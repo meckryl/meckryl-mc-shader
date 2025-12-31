@@ -1,6 +1,7 @@
 #version 460 compatibility
 
 #include "/lib/globals.glsl"
+#include "/lib/fog/waterFog.glsl"
 
 uniform sampler2D gtexture;
 uniform sampler2D specular;
@@ -42,6 +43,6 @@ void main() {
 
     
     if (blockID == uint(3)) {
-        labpbrSpeculars = vec4(0.5, 1.0, 0.0, 1.0);
+        labpbrSpeculars = vec4(1.0, 0.8, 0.0, 1.0);
     }
 }

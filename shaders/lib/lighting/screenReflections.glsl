@@ -89,7 +89,7 @@ vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler
         hitSky = true;
     }
     else if (screenEdge){
-        return vec4(-1.0);
+        return (ray.y > 0) ? vec4(-1, -1, -1, 1) : vec4(0);
     }
 
     if (hit0) {
@@ -129,6 +129,6 @@ vec4 getReflectedColor(vec3 screenPos, vec3 surfaceNorm, sampler2D screenSampler
 
     float visibility = edgeProximity;
 
-    if (hitSky || !hit1) return vec4(-1, -1, -1, visibility);
+    if (hitSky || !hit1) return (ray.y > 0) ? vec4(-1, -1, -1, 1) : vec4(0);
     return vec4(texelFetch(screenSampler, ivec2(currentFrag), 0).rgb, visibility);
 }
