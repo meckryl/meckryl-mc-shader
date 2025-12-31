@@ -67,9 +67,6 @@ float getReflectionFactor(vec2 screenCoord, float smoothness, float reflectance,
 
     float normalDistribution = (1.0 - roughness) / PI;
 
-    //float normalDistribution = getNormalDistribution(surfaceNorm, halfDirection, roughness);
-    //float normalDistribution = 1.0;
-
     float k = pow2(roughness + 1) * 0.125;
     float geometryFunction = pow2(NoV / (NoV * (1 - k) + k));
 
@@ -101,8 +98,8 @@ vec3 getSurfaceRadiance(vec2 screenCoord, vec3 albedo) {
 
     float normalDistribution = getNormalDistribution(surfaceNorm, halfDirection, roughness);
 
-    float geometryFunction = getGeometricShadowing(viewDirection, surfaceNorm, halfDirection, roughness);
-    geometryFunction *= getGeometricShadowing(getMainLightDirection(), surfaceNorm, halfDirection, roughness);
+    float k = pow2(roughness + 1) * 0.125;
+    float geometryFunction = (NoV / (NoV * (1 - k) + k)) * (NoL / (NoL * (1 - k) + k));
 
     float fresnel = reflectance + (1 - reflectance) * pow(1 - (HoV), 5); //Approximation, should replace to support metalic values
     

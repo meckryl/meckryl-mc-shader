@@ -30,7 +30,7 @@ void main() {
     }*/
     
     if (reflectedColor.r < 0) {
-        reflectedColor = vec4(getSkyColor(ray), 1.0);
+        reflectedColor = vec4(getSkyColor(ray), clamp01(reflectedColor.a + 0.5));
         reflectedColor.rgb = vec3(1.0) - exp(-1.0 * reflectedColor.rgb * 11);
     }
     

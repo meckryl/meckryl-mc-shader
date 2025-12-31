@@ -7,6 +7,7 @@ out vec2 lmcoord;
 out vec2 texcoord;
 out vec4 glcolor;
 out vec3 normal;
+out float depth;
 flat out uint blockID;
 
 
@@ -26,6 +27,7 @@ void main() {
 	lmcoord = correctedLightmap(gl_MultiTexCoord1.xy);
     normal = gl_NormalMatrix * normalize(gl_Normal); //View space
 	normal = mat3(gbufferModelViewInverse) * normal; //Local space
+    depth = gl_Position.z / gl_Position.w;
 
 	glcolor = gl_Color;
 }

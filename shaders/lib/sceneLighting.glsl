@@ -155,9 +155,6 @@ vec4 getLightVector(vec3 screenPos) {
 	vec2 texcoord = fragCoord.xy;
 
 	vec2 lightmap = texture(colortex1, texcoord).xy;
-	vec3 encodedNormal = texture(colortex2, texcoord).xyz;
-
-	vec3 normal = normalize((encodedNormal - 0.5) * 2.0);
 
     float ambient = ambientStrength;
 	float skylight = lightmap.y * getSkyStrength();
