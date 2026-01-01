@@ -30,7 +30,7 @@ vec3 getMainLightDirection() {
 	return normalize(mat3(gbufferModelViewInverse) * lightVector);
 }
 
-vec4 screenPosToShadowClipPos(vec3 screenPos, vec3 normal, out vec4 unbiased) {
+vec4 screenPosToShadowClipPos(vec3 screenPos, vec3 normal) {
     float depth = screenPos.z;
     if (depth < 0.56) {
         depth  = depth * 2.0 - 1.0;
@@ -44,13 +44,14 @@ vec4 screenPosToShadowClipPos(vec3 screenPos, vec3 normal, out vec4 unbiased) {
 	vec3 feetPlayerPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
 
     vec3 shadowViewPos = (shadowModelView * vec4(feetPlayerPos, 1.0)).xyz;
-	unbiased = shadowProjection * vec4(shadowViewPos, 1.0);
+	vec3 unbiased = projectAndDivide(shadowProjection, shadowViewPos);
 
     vec3 bias = normal; //World aligned normal of the surface the current fragment belongs to
     float NoL = clamp01(dot(normal, -getMainLightDirection()));
 
 #ifdef RTW_ENABLED
-    bias *= vec3(max((1.0 - NoL) * min(length(feetPlayerPos.xz), 160) * 0.01, 0.07));
+    float resolutionFactor = getResolutionFactor(unbiased.xy * 0.5 + 0.5);
+    bias *= vec3(max((1.0 - NoL) * resolutionFactor * 0.5, 0.07));
 
 #else
     bias *= vec3(max((1.5 - NoL) * length(feetPlayerPos.xz) * 0.01, 0.15));
@@ -120,10 +121,8 @@ vec3 getMainLight(vec3 shadowScreenPos) {
 vec3 getSoftShadow(vec2 texcoord, vec3 surfaceNorm) {
 	ivec2 screenCoord = ivec2(texcoord * screenSize);
 	float noise = sampleWNTexel(screenCoord).r;
-
-    vec4 unbiasedSClipPos;
     vec3 screenPos = vec3(texcoord, texture(depthtex0, texcoord).x);
-    vec4 shadowClipPos = screenPosToShadowClipPos(screenPos, surfaceNorm, unbiasedSClipPos);
+    vec4 shadowClipPos = screenPosToShadowClipPos(screenPos, surfaceNorm);
 
     float theta = noise * radians(360.0); // random angle using noise value
     float cosTheta = cos(theta);

@@ -22,7 +22,7 @@ void main() {
     float depth = texture(depthtex0, texcoord).x;
 	if (depth == 1.0) {
         color.rgb = getSkyColor(texcoord.xy);
-        color.rgb = vec3(1.0) - exp(-1.0 * color.rgb * 11);
+        //color.rgb = vec3(1.0) - exp(-1.0 * color.rgb * 11);
 
         vec3 sunAndMoon = texture(colortex5, texcoord).rgb;
         if (sunAndMoon != vec3(0.0)) {
@@ -33,7 +33,7 @@ void main() {
         }
         color.a = 1.0;
         color.rgb = pow(color.rgb, vec3(2.2)); // Inverse gamma correction
-        color.rgb *= 3.0;
+        color.rgb *= 300.0;
 		return;
 	}
 #endif

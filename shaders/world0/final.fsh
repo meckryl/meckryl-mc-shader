@@ -11,7 +11,7 @@ uniform sampler3D rayleigh_ss_LUT;
 in vec2 texcoord;
 uniform bool is_sneaking;
 
-const float exposure = 2.0;
+const float exposure = 3.0;
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;

@@ -36,3 +36,11 @@ vec2 warpFromTexel(vec2 texelPos) {
 
     return resultPos;
 }
+
+float getResolutionFactor(vec2 shadowCoord) {
+    vec2 texCoord = shadowCoord * RTW_IMAP_RES;
+    float resolutionX = abs(imageLoad(rtw_imap, ivec2(3, floor(texCoord.x) + 1)).x - imageLoad(rtw_imap, ivec2(3, floor(texCoord.x))).x);
+    float resolutionY = abs(imageLoad(rtw_imap, ivec2(2, floor(texCoord.y) + 1)).x - imageLoad(rtw_imap, ivec2(2, floor(texCoord.y))).x);
+
+    return RTW_IMAP_RES / (min(resolutionX, resolutionY));
+}

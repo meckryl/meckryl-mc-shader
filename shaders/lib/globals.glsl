@@ -31,7 +31,7 @@ const float blockWaveAmp = 0.03;
 const float blockWaveFreq = 1.0;
 const float blockWaveSpeed = 1.0;
 
-const float shadowDistance = 206.0;
+const float shadowDistance = 222.0;
 const int shadowMapResolution = 2048;
 const float shadowIntervalSize = 1.0;
 const bool shadowHardwareFiltering = false;
