@@ -23,5 +23,5 @@ void main() {
 	if (color.a <= alphaTestRef) {
 		discard;
 	}
-	color.rgb = pow(color.rgb, vec3(2.2)); // Inverse gamma correction
+	//color.rgb = pow(color.rgb, vec3(2.2)); // Inverse gamma correction
 }

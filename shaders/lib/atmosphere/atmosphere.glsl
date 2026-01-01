@@ -1,5 +1,8 @@
 #include "/lib/math.glsl"
 
+#ifndef ATMOSPHERE_INCLUDED
+#define ATMOSPHERE_INCLUDED
+
 uniform vec3 sunPosition;
 uniform int frameCounter;
 
@@ -103,12 +106,29 @@ vec3 getSunRadiance(vec2 screenCoord) {
     float mu = rmu / height;
 
     AtmosphereParameters atmosphere = get_atmosphere();
+    //return atmosphere.solar_irradiance;
+
+    if (RayIntersectsGround(atmosphere, height, mu)) return vec3(0.0);
+
+    vec3 transmittance = GetTransmittanceToTopAtmosphereBoundary(atmosphere, transmittance_LUT, height, mu);
+    
+    return transmittance * atmosphere.solar_irradiance * 1e2;
+}
+
+vec3 getSunRadiance(vec3 viewDirection) {
+    float height = height;
+    vec3 camPos = vec3(0.0, height, 0.0);
+    float rmu = dot(camPos, viewDirection);
+    float mu = rmu / height;
+
+    AtmosphereParameters atmosphere = get_atmosphere();
 
     if (RayIntersectsGround(atmosphere, height, mu)) return vec3(0.0);
 
     vec3 transmittance = GetTransmittanceToTopAtmosphereBoundary(atmosphere, transmittance_LUT, height, mu);
     
     return transmittance * atmosphere.solar_irradiance;
-} 
+}
 #endif
 
+#endif

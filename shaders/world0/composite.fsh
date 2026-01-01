@@ -24,7 +24,7 @@ void main() {
         float translucentDepth = texelFetch(depthtex0, ivec2(gl_FragCoord.xy), 0).x * 2.0 - 1.0;
         translucentDepth = -ndcPosToViewPos(vec3(0, 0, translucentDepth)).z;
         const vec3 waterFogColor = vec3(0.0, 0.1, 0.15);
-        float fogStrength = clamp01(translucentDepth * 0.05);
+        float fogStrength = clamp01(translucentDepth * 0.03);
         color.rgb = mix(color.rgb, waterFogColor, fogStrength);
     }
 }

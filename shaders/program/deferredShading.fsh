@@ -21,17 +21,19 @@ void main() {
 #else
     float depth = texture(depthtex0, texcoord).x;
 	if (depth == 1.0) {
-	    color.rgb = pow(color.rgb, vec3(2.2)); // Inverse gamma correction
-        color.rgb = vec3(1.0) - exp(-1.0 * getSkyColor(texcoord.xy) * 11);
+        color.rgb = getSkyColor(texcoord.xy);
+        color.rgb = vec3(1.0) - exp(-1.0 * color.rgb * 11);
 
         vec3 sunAndMoon = texture(colortex5, texcoord).rgb;
         if (sunAndMoon != vec3(0.0)) {
             vec3 directRadiance = getSunRadiance(texcoord.xy);
             if (directRadiance != vec3(0.0)) {
-                color.rgb += sunAndMoon + directRadiance;
+                color.rgb = sunAndMoon + directRadiance;
             }
         }
         color.a = 1.0;
+        color.rgb = pow(color.rgb, vec3(2.2)); // Inverse gamma correction
+        color.rgb *= 3.0;
 		return;
 	}
 #endif

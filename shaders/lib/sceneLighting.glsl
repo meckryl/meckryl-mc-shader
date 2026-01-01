@@ -7,6 +7,7 @@
 #include "/lib/distort.glsl"
 #endif
 #include "/lib/noise.glsl"
+#include "/lib/atmosphere/atmosphere.glsl"
 
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
@@ -49,7 +50,7 @@ vec4 screenPosToShadowClipPos(vec3 screenPos, vec3 normal, out vec4 unbiased) {
     float NoL = clamp01(dot(normal, -getMainLightDirection()));
 
 #ifdef RTW_ENABLED
-    bias *= vec3(max((1.0 - NoL) * min(length(feetPlayerPos.xz), 100) * 0.01, 0.07));
+    bias *= vec3(max((1.0 - NoL) * min(length(feetPlayerPos.xz), 160) * 0.01, 0.07));
 
 #else
     bias *= vec3(max((1.5 - NoL) * length(feetPlayerPos.xz) * 0.01, 0.15));
@@ -87,11 +88,13 @@ float getSunFactor() {
 }
 
 vec3 getMainColor() {
-	return mix(moonlightColor, sunlightColor, getSunFactor());
+	//return mix(moonlightColor, sunlightColor, getSunFactor());
+    return getSunRadiance(getMainLightDirection()) * sunlightColor.rgb;
 }
 
 float getMainStrength() {
-	return mix(moonlightStrength, sunlightStrength, getSunFactor());
+	//return mix(moonlightStrength, sunlightStrength, getSunFactor());
+    return sunlightStrength;
 }
 
 float getSkyStrength() {
