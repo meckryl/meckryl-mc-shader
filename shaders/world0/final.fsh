@@ -19,19 +19,22 @@ layout(location = 0) out vec4 color;
 void main() {
 	vec4 sampledColor = vec4(texture(colortex0, texcoord));
 
+
+#ifdef DEBUG
+    if (!is_sneaking) {
+        sampledColor *= exposure;
+    }
+    else {
+        sampledColor *= exposure;
+    }
+#else
     sampledColor *= exposure;
+#endif
 
     sampledColor.rgb = lottesTonemap(sampledColor.rgb);
     //sampledColor.rgb = ACESFitted(sampledColor.rgb);
     //sampledColor.rgb = ACESApproximate(sampledColor.rgb);
 
-#ifdef DEBUG
-    if (!is_sneaking) {
-        //sampledColor.rgb = vec3(1.0) - exp(-1.0 * sampledColor.rgb * exposure);
-    }
-#else
-    //sampledColor.rgb = vec3(1.0) - exp(-1.0 * sampledColor.rgb * exposure);
-#endif
     
     sampledColor.rgb = pow(sampledColor.rgb, vec3(1.0 / 2.2)); // Gamma correction
 

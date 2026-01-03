@@ -4,7 +4,7 @@
 
 uniform sampler2D colortex0;
 uniform sampler2D shadowtex0;
-uniform sampler2D shadowcolor1;
+uniform sampler2D shadowcolor0;
 
 uniform bool sameViewPos;
 
@@ -44,8 +44,9 @@ void displayShadowTex() {
 void main() {
     if (is_sneaking) {
         //displayIMap();
-        displayShadowTex();
-        //color.rgb = texture(shadowcolor1, texcoord).rgb * 0.5 / shadowMapResolution;
+        //displayShadowTex();
+        color.rgb = pow(texture(shadowcolor0, texcoord).rgb, vec3(2.2));
+        color.a = 1.0;
         
     }
     else {

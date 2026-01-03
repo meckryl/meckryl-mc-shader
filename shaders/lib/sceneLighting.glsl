@@ -51,12 +51,12 @@ vec4 screenPosToShadowClipPos(vec3 screenPos, vec3 normal) {
 
 #ifdef RTW_ENABLED
     float resolutionFactor = getResolutionFactor(unbiased.xy * 0.5 + 0.5);
-    bias *= vec3(max((1.0 - NoL) * resolutionFactor * 0.5, 0.07));
+    bias *= vec3(max((1.5 - NoL) * resolutionFactor * 1.0, 0.07));
 
 #else
     bias *= vec3(max((1.5 - NoL) * length(feetPlayerPos.xz) * 0.01, 0.15));
 #endif
-    feetPlayerPos += bias * 0.6;
+    feetPlayerPos += bias * 0.15;
 
 	shadowViewPos = (shadowModelView * vec4(feetPlayerPos, 1.0)).xyz;
 	vec4 shadowClipPos = shadowProjection * vec4(shadowViewPos, 1.0);
