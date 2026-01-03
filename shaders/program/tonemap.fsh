@@ -50,3 +50,13 @@ vec3 ACESFitted(vec3 color)
 
     return color;
 }
+
+vec3 lottesTonemap(vec3 color) {
+    const float contrast = 1.5;
+    const float shoulder = 1.0;
+    const float b = 1.0;
+    const float c = 0.5;
+    vec3 z = pow(color, vec3(contrast));
+    vec3 result = z / (pow(z, vec3(shoulder)) * b + c);
+    return clamp(result, 0.0, 1.0);
+}

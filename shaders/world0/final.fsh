@@ -11,7 +11,7 @@ uniform sampler3D rayleigh_ss_LUT;
 in vec2 texcoord;
 uniform bool is_sneaking;
 
-const float exposure = 3.0;
+const float exposure = 2.0;
 
 /* RENDERTARGETS: 0 */
 layout(location = 0) out vec4 color;
@@ -19,15 +19,18 @@ layout(location = 0) out vec4 color;
 void main() {
 	vec4 sampledColor = vec4(texture(colortex0, texcoord));
 
-    sampledColor.rgb = ACESFitted(sampledColor.rgb);
+    sampledColor *= exposure;
+
+    sampledColor.rgb = lottesTonemap(sampledColor.rgb);
+    //sampledColor.rgb = ACESFitted(sampledColor.rgb);
     //sampledColor.rgb = ACESApproximate(sampledColor.rgb);
 
 #ifdef DEBUG
     if (!is_sneaking) {
-        sampledColor.rgb = vec3(1.0) - exp(-1.0 * sampledColor.rgb * exposure);
+        //sampledColor.rgb = vec3(1.0) - exp(-1.0 * sampledColor.rgb * exposure);
     }
 #else
-    sampledColor.rgb = vec3(1.0) - exp(-1.0 * sampledColor.rgb * exposure);
+    //sampledColor.rgb = vec3(1.0) - exp(-1.0 * sampledColor.rgb * exposure);
 #endif
     
     sampledColor.rgb = pow(sampledColor.rgb, vec3(1.0 / 2.2)); // Gamma correction

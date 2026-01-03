@@ -32,8 +32,8 @@ void main() {
             }
         }
         color.a = 1.0;
-        color.rgb = pow(color.rgb, vec3(2.2)); // Inverse gamma correction
-        color.rgb *= 300.0;
+        //color.rgb = pow(color.rgb, vec3(2.2)); // Inverse gamma correction
+        color.rgb *= 6.0;
 		return;
 	}
 #endif
