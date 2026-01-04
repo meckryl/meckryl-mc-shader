@@ -112,7 +112,7 @@ vec3 getSunRadiance(vec2 screenCoord) {
 
     vec3 transmittance = GetTransmittanceToTopAtmosphereBoundary(atmosphere, transmittance_LUT, height, mu);
     
-    return transmittance * atmosphere.solar_irradiance * 1e2;
+    return transmittance * atmosphere.solar_irradiance;
 }
 
 vec3 getSunRadiance(vec3 viewDirection) {

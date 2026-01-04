@@ -3,6 +3,7 @@
 #ifdef DEBUG
 
 uniform sampler2D colortex0;
+uniform sampler2D colortex9;
 uniform sampler2D shadowtex0;
 uniform sampler2D shadowcolor0;
 
@@ -45,7 +46,8 @@ void main() {
     if (is_sneaking) {
         //displayIMap();
         //displayShadowTex();
-        color.rgb = pow(texture(shadowcolor0, texcoord).rgb, vec3(2.2));
+        //color.rgb = pow(texture(shadowcolor0, texcoord).rgb, vec3(2.2));
+        color.rgb = texture(colortex9, texcoord).rgb * texture(colortex9, texcoord).a;
         color.a = 1.0;
         
     }
